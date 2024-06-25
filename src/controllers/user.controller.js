@@ -6,16 +6,17 @@ import { ApiResponse } from '../utils/ApiResponse.js'
 
 const registerUser = aysncHandler(async (req,res) =>{
  // get user cetail from frontend
- const {fullname , username ,email ,password }= req.body
+ const {fullName , username ,email ,password }= req.body
 console.log("email", email);
 
+console.log("req.body", req.body);
 
-if ([fullname,email ,password,username].some((field)=>field?.trim() === ""))
+if ([fullName,email ,password,username].some((field)=>field?.trim() === ""))
     {
         throw new ApiError(400,"all filed are required")
     }
 
-   const existedUser= User.findOne({
+   const existedUser= await User.findOne({
         $or :[{username},{email}]
     })
     if(existedUser)
@@ -24,7 +25,13 @@ if ([fullname,email ,password,username].some((field)=>field?.trim() === ""))
         }
 
       const avatarLocalPath =  req.files?.avatar[0]?.path;
-      const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    //   const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // console.log("req.file",req.files);
+
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
 
       if(!avatarLocalPath)
         {
@@ -39,9 +46,9 @@ if(!avatar)
     }
 
   const user = await User.create({
-        fullname,
+        fullName,
         avatar: avatar.url,
-        coverImage:avatar.url || "",
+        coverImage:coverImage?.url || "",
         email,
         password,
         username:username.toLowerCase()
